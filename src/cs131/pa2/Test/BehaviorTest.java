@@ -58,7 +58,7 @@ public class BehaviorTest {
     }
 
     @Test
-    public void car_Enter() {
+    public void car_Enter() throws InterruptedException {
         Vehicle car = TestUtilities.factory.createNewCar(TestUtilities.gbNames[0], Direction.random());
         Tunnel tunnel = TestUtilities.factory.createNewBasicTunnel(TestUtilities.mrNames[0]);
         TestUtilities.VehicleEnters(car, tunnel);
@@ -74,7 +74,7 @@ public class BehaviorTest {
     
 
     @Test
-    public void sled_Enter() {
+    public void sled_Enter() throws InterruptedException {
         Vehicle sled = TestUtilities.factory.createNewSled(TestUtilities.gbNames[0], Direction.random());
         Tunnel tunnel = TestUtilities.factory.createNewBasicTunnel(TestUtilities.mrNames[0]);
         TestUtilities.VehicleEnters(sled, tunnel);

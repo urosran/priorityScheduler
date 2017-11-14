@@ -39,14 +39,14 @@ public class PrioritySchedulerTest {
     }
 
     @Test
-    public void Car_Enter() {
+    public void Car_Enter() throws InterruptedException {
         Vehicle car = TestUtilities.factory.createNewCar(TestUtilities.gbNames[0], Direction.random());
         Tunnel tunnel = setupSimplePriorityScheduler(TestUtilities.mrNames[0]);
         TestUtilities.VehicleEnters(car, tunnel);
     }
 
     @Test
-    public void Sled_Enter() {
+    public void Sled_Enter() throws InterruptedException {
     		Vehicle sled = TestUtilities.factory.createNewSled(TestUtilities.gbNames[0], Direction.random());
         Tunnel tunnel = setupSimplePriorityScheduler(TestUtilities.mrNames[0]);
         TestUtilities.VehicleEnters(sled, tunnel);
