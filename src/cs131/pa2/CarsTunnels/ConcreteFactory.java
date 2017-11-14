@@ -29,13 +29,14 @@ public class ConcreteFactory implements Factory {
 
     @Override
     public Tunnel createNewPriorityScheduler(String label, Collection<Tunnel> tunnels, Log log){
-    	return new PriorityScheduler(label);
+    	return new PriorityScheduler(label, tunnels);
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 	@Override
 	public Vehicle createNewAmbulance(String label, Direction direction) {
-        //TODO RETURN NEW AMBULANCE HERE
+        
+		//TODO RETURN NEW AMBULANCE HERE
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
