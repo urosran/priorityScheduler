@@ -2,6 +2,7 @@ package cs131.pa2.CarsTunnels;
 
 import cs131.pa2.Abstract.Tunnel;
 import cs131.pa2.Abstract.Vehicle;
+import cs131.pa2.Abstract.Log.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,23 +21,23 @@ import javax.swing.plaf.metal.MetalIconFactory.PaletteCloseIcon;
 import javax.swing.text.AbstractDocument.LeafElement;
 
 public class PriorityScheduler extends Tunnel{
+	
+	private final PriorityQueue <Vehicle> waitingRoom = new PriorityQueue<Vehicle>((x, y) -> Integer.compare(y.getPriority(), x.getPriority()));
+	private final ReentrantLock lock = new ReentrantLock();
+	private final Collection <Tunnel> tunnels;
 
-	private PriorityQueue <Vehicle> waitingRoom = new PriorityQueue<Vehicle>();
-	public ReentrantLock lock = new ReentrantLock();
-	private ArrayList <Tunnel> tunnels = new ArrayList <Tunnel>();
-	
-//	private ArrayList<Integer> prioritySemaphore = new ArrayList<>();
-//	private ArrayList<Integer> fullTunnelSemaphore = new ArrayList<>();	
-	
-	private HashMap<Vehicle, Tunnel> tunnelMap = new HashMap<>();
-	
-	private Condition tunnelIsfull;
-	
-	
-	
-	public PriorityScheduler(String name, Collection<Tunnel> tunnels) {
-		super(name);
-		this.tunnels = (ArrayList<Tunnel>)tunnels;	
+	//	private ArrayList<Integer> prioritySemaphore = new ArrayList<>();
+	//	private ArrayList<Integer> fullTunnelSemaphore = new ArrayList<>();	
+
+	private final HashMap<Vehicle, Tunnel> tunnelMap = new HashMap<>();
+
+	private final Condition tunnelIsfull = lock.newCondition();
+ 
+
+
+	public PriorityScheduler(String name, Collection<Tunnel> tunnels, Log log) {
+		super(name, log);
+		this.tunnels = tunnels;	
 	}
 
 	@Override
@@ -44,36 +45,41 @@ public class PriorityScheduler extends Tunnel{
 		//when a vehicle tries to enter the tunnel it's placed in the waiting room 
 		//so that we can determine its priority 
 		lock.lock();
-//		tunnelIsfull = lock.newCondition();
-		boolean vehicleEntered = false;
-		waitingRoom.add(vehicle);
-		
-		while(vehicleEntered==false) {
-			if (waitingRoom.peek().getPriority()<= vehicle.getPriority()) {
-			Iterator<Tunnel> tIterator = tunnels.iterator();
+		try {
 
-			while(tIterator.hasNext()) {
-				Tunnel tunnel = tIterator.next();
-					if (tunnel.tryToEnterInner(vehicle)) {
-						waitingRoom.poll();
-						vehicleEntered = true;
-						tunnelMap.put(vehicle,tunnel);
-						return true;
-					}else {
-						tunnelIsfull.await();
-						vehicleEntered = true; 
-					}	
-					
-				}
+			boolean vehicleEntered = false;
+			waitingRoom.add(vehicle);
+
+			while(vehicleEntered==false) {
+
+				if (waitingRoom.peek().getPriority()<=vehicle.getPriority()) {
+					Iterator<Tunnel> tIterator = tunnels.iterator();
+
+					while(tIterator.hasNext()) {
+						Tunnel tunnel = tIterator.next();
+						if (tunnel.tryToEnterInner(vehicle)) {
+							waitingRoom.remove(vehicle);
+							vehicleEntered = true;
+							tunnelMap.put(vehicle,tunnel);
+//							tunnelIsfull.signalAll();
+							return true;
+						}else {
+							tunnelIsfull.await();
+							vehicleEntered = false; 
+						}	
+					}
 				}else {
 					tunnelIsfull.await();
-					vehicleEntered = true;
-			}  
+					vehicleEntered = false;
+				}  
+			}
+			//		lock.unlock();
+			//		return false; 
+		}finally {
+			lock.unlock();
 		}
-		lock.unlock();
-		return false; 
+		return false;
 	}
-	
 	@Override
 	public void exitTunnelInner(Vehicle vehicle) {
 		lock.lock();
@@ -84,9 +90,9 @@ public class PriorityScheduler extends Tunnel{
 		tunnelMap.remove(vehicle);
 		//
 		tunnelIsfull.signalAll();
-		
+
 		lock.unlock();
-		
+
 	}
-	
+
 }

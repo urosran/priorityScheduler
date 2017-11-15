@@ -84,8 +84,11 @@ public class SimulationTest {
     }
 
     @Test
+    
     public void Priority_Scheduler_Test() {
-        LogVerifier verifier = new LogVerifier(Tunnel.DEFAULT_LOG);
+        
+    	for(int p=0; p<10; p++) {
+    	LogVerifier verifier = new LogVerifier(Tunnel.DEFAULT_LOG);
         DummyLog scheduler_log = new DummyLog();
         Thread verifierThread = new Thread(verifier);
         verifierThread.start();
@@ -131,9 +134,10 @@ public class SimulationTest {
             assertTrue("Interruption exception occurred.", false);
         }
         assertTrue(verifier.printErrors(), !verifier.hasErrors());
-    }
+        }
+        }
     
-    @Test
+//    @Test
     public void Preemptive_Priority_Scheduler_Test() {
         LogVerifier verifier = new LogVerifier(Tunnel.DEFAULT_LOG);
         DummyLog scheduler_log = new DummyLog();
@@ -142,7 +146,7 @@ public class SimulationTest {
         Collection<Tunnel> tunnels = new ArrayList<Tunnel> ();
        
         Collection<Thread> vehicleThread = new ArrayList<Thread>();
-        for (int i = 0; i < 10; i++) {
+        for (int p = 0; p < 10; p++) {
             tunnels.add(TestUtilities.factory.createNewBasicTunnel(TestUtilities.mrNames[i]));
         }
         Tunnel preemptivePriorityScheduler = TestUtilities.factory.createNewPreemptivePriorityScheduler("Scheduler", tunnels, scheduler_log);
