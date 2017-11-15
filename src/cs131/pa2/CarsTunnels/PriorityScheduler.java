@@ -26,8 +26,6 @@ public class PriorityScheduler extends Tunnel{
 	private final ReentrantLock lock = new ReentrantLock();
 	private final Collection <Tunnel> tunnels;
 
-	//	private ArrayList<Integer> prioritySemaphore = new ArrayList<>();
-	//	private ArrayList<Integer> fullTunnelSemaphore = new ArrayList<>();	
 
 	private final HashMap<Vehicle, Tunnel> tunnelMap = new HashMap<>();
 
@@ -46,22 +44,23 @@ public class PriorityScheduler extends Tunnel{
 		//so that we can determine its priority 
 		lock.lock();
 		try {
-
+			//have a boolean to track if the car has entered the tunnel or not
 			boolean vehicleEntered = false;
 			waitingRoom.add(vehicle);
-
+				//while not in the tunnel
 			while(vehicleEntered==false) {
-
+					//check if the vehicle is the top priority if it is
 				if (waitingRoom.peek().getPriority()<=vehicle.getPriority()) {
 					Iterator<Tunnel> tIterator = tunnels.iterator();
-
+					//try to find an empty tunnel for it
 					while(tIterator.hasNext()) {
 						Tunnel tunnel = tIterator.next();
 						if (tunnel.tryToEnterInner(vehicle)) {
 							waitingRoom.remove(vehicle);
+							//if the vehicle entered remove it from the waiting queue  
 							vehicleEntered = true;
+							//track what vehicle goes where
 							tunnelMap.put(vehicle,tunnel);
-//							tunnelIsfull.signalAll();
 							return true;
 						}else {
 							tunnelIsfull.await();
@@ -69,12 +68,12 @@ public class PriorityScheduler extends Tunnel{
 						}	
 					}
 				}else {
+					//if the tunnel is full or if the vehichle is not the highest priority go to sleep
 					tunnelIsfull.await();
 					vehicleEntered = false;
 				}  
 			}
-			//		lock.unlock();
-			//		return false; 
+		//if the vehicle has finished unlock the lock
 		}finally {
 			lock.unlock();
 		}
@@ -88,7 +87,7 @@ public class PriorityScheduler extends Tunnel{
 		tunnel.exitTunnelInner(vehicle);
 		//remove the vehicle for that tunnel
 		tunnelMap.remove(vehicle);
-		//
+		//wake up all other threads
 		tunnelIsfull.signalAll();
 
 		lock.unlock();

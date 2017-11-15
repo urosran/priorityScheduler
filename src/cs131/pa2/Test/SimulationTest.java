@@ -146,7 +146,7 @@ public class SimulationTest {
         Collection<Tunnel> tunnels = new ArrayList<Tunnel> ();
        
         Collection<Thread> vehicleThread = new ArrayList<Thread>();
-        for (int p = 0; p < 10; p++) {
+        for (int i = 0; i < 10; i++) {
             tunnels.add(TestUtilities.factory.createNewBasicTunnel(TestUtilities.mrNames[i]));
         }
         Tunnel preemptivePriorityScheduler = TestUtilities.factory.createNewPreemptivePriorityScheduler("Scheduler", tunnels, scheduler_log);
